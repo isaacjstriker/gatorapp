@@ -21,7 +21,7 @@ func getConfigFilePath() (string, error) {
 	return home + "/" + configFileName, nil
 }
 
-func write(cfg Config) error {
+func Write(cfg Config) error {
 	configPath, err := getConfigFilePath()
 	if err != nil {
 		return fmt.Errorf("could not get config file path: %w", err)
@@ -61,5 +61,5 @@ func Read() (*Config, error) {
 
 func (cfg *Config) SetUser(username string) error {
 	cfg.CurrentUsername = username
-	return write(*cfg)
+	return Write(*cfg)
 }

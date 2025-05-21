@@ -1,11 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
+	_ "github.com/lib/pq"
+
 	"github.com/isaacjstriker/gatorapp/internal/config"
+	"github.com/isaacjstriker/gatorapp/internal/database"
 )
 
 func main() {
@@ -15,15 +19,33 @@ func main() {
 	}
 	fmt.Printf("Config loaded: %v\n", cfg)
 
+	// Open database connection
+	db, err := sql.Open("postgres", cfg.DbURL)
+	if err != nil {
+		log.Fatalf("Error opening database: %v", err)
+	}
+	defer db.Close()
+
+	// Verify connection is valid
+	if err := db.Ping(); err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	}
+
+	queries := database.New(db)
+
 	state := &State{
-		Config: cfg,
+		Config:  cfg,
+		DB:      db,
+		Queries: queries,
 	}
 
 	commands := &Commands{
 		handlers: make(map[string]func(*State, Command) error),
 	}
 
+	// Initialize commands
 	commands.register("login", handlerLogin)
+	commands.register("register", handlerRegister)
 
 	//Get command-line arguments passed in by the user
 	if len(os.Args) < 2 {
