@@ -109,3 +109,34 @@ func handlerRegister(s *State, cmd Command) error {
 
 	return nil
 }
+
+func handlerReset(s *State, cmd Command) error {
+
+	err := s.Queries.DelUsers(context.Background())
+	if err != nil {
+		fmt.Printf("failed to delete users: %s", err)
+		os.Exit(1)
+	}
+	fmt.Println("Users deleted successfully")
+	return nil
+}
+
+func handlerUsers(s *State, cmd Command) error {
+	users, err := s.Queries.GetUsers(context.Background())
+	if err != nil {
+		fmt.Printf("failed to fetch users: %s", err)
+		os.Exit(1)
+	}
+	if len(users) == 0 {
+		fmt.Println("No users found")
+		return nil
+	}
+	fmt.Println("Users:")
+	for _, user := range users {
+		if user.Name == s.Config.CurrentUsername {
+			fmt.Printf("* %s (current)\n", user.Name)
+		}
+		fmt.Printf("* %s\n", user.Name)
+	}
+	return nil
+}
