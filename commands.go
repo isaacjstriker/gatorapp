@@ -151,3 +151,44 @@ func handlerAgg(s *State, cmd Command) error {
 	fmt.Printf("%+v\n", feed)
 	return nil
 }
+
+func handlerAddFeed(s *State, cmd Command) error {
+	user, err := s.Queries.GetUser(context.Background(), s.Config.CurrentUsername)
+	if err != nil {
+		fmt.Printf("could not find current username: %s", err)
+		os.Exit(1)
+	}
+
+	if len(cmd.args) < 2 {
+		fmt.Println("Usage: addfeed <name> <url>")
+		os.Exit(1)
+	}
+	feedName := cmd.args[0]
+	feedURL := cmd.args[1]
+
+	id := uuid.New()
+	now := time.Now()
+
+	feed, err := s.Queries.CreateFeed(context.Background(), database.CreateFeedParams{
+		ID:        id,
+		CreatedAt: now,
+		UpdatedAt: now,
+		Name:      feedName,
+		Url:       feedURL,
+		UserID:    user.ID,
+	})
+	if err != nil {
+		fmt.Printf("could not create feed: %s", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Feed created:\n")
+	fmt.Printf("ID: %s\n", feed.ID)
+	fmt.Printf("Name: %s\n", feed.Name)
+	fmt.Printf("URL: %s\n", feed.Url)
+	fmt.Printf("UserID: %s\n", feed.UserID)
+	fmt.Printf("CreatedAt: %s\n", feed.CreatedAt.Format(time.RFC3339))
+	fmt.Printf("UpdatedAt: %s\n", feed.UpdatedAt.Format(time.RFC3339))
+
+	return nil
+}
