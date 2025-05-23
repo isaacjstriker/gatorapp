@@ -17,7 +17,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error reading config: %v", err)
 	}
-	fmt.Printf("Config loaded: %v\n", cfg)
 
 	// Open database connection
 	db, err := sql.Open("postgres", cfg.DbURL)
@@ -49,7 +48,12 @@ func main() {
 	commands.register("reset", handlerReset)
 	commands.register("users", handlerUsers)
 	commands.register("agg", handlerAgg)
-	commands.register("addfeed", handlerAddFeed)
+	commands.register("addfeed", requireLogin(handlerAddFeed))
+	commands.register("feeds", handlerFeeds)
+	commands.register("follow", requireLogin(handlerFollow))
+	commands.register("following", requireLogin(handlerFollowing))
+	commands.register("unfollow", requireLogin(handlerUnfollow))
+	commands.register("browse", requireLogin(handlerBrowse))
 
 	//Get command-line arguments passed in by the user
 	if len(os.Args) < 2 {
